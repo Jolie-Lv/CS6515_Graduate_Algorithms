@@ -61,7 +61,7 @@ class Graph(object):
         if not Graph.compare_rows(DP, DP, n, n-1):
             assert "There are negative weights in graph"
         return DP[-1]
-    
+
     def dijkstra(self, s):
         ret = [None]*len(self.labels)
 
@@ -79,6 +79,23 @@ class Graph(object):
 
         return ret
 
+    def floyd_warshall(self):
+        n = len(self.labels)
+        DP = [[[float('inf') for k in range(n)] for j in range(n)] for i in range(n+1)]
+
+        for start in self.weights:
+            for dest in self.weights[start]:
+                DP[0][start][dest] = self.weights[start][dest]
+
+        for node in range(n):
+            DP[0][node][node] = 0
+
+        for i in range(1, n+1):
+            for j in range(n):
+                for k in range(n):
+                    DP[i][j][k] = min(DP[i-1][j][k], DP[i-1][j][i-1]+DP[i-1][i-1][k])
+
+        return DP[-1]
 
     @staticmethod
     def compare_rows(array1, array2, row1, row2):
@@ -87,10 +104,9 @@ class Graph(object):
                 true if values of row1 in array1 and row2 in array2 are identical
         """
         if row1 >= len(array1) or row2 >= len(array2) or len(array1[0]) != len(array2[0]):
-            return False
+            return Falses
 
         for i in range(len(array1[0])):
             if array1[row1][i] != array2[row2][i]:
                 return False
         return True
-
