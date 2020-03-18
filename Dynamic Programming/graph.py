@@ -55,10 +55,10 @@ class Graph(object):
                 if self.reversed_edges.get(j) is not None:
                     for adj in self.reversed_edges[j]:
                         DP[i][j] = min(DP[i][j], DP[i-1][adj]+self.weights[adj][j])
-            if Graph.__compare_rows(DP, i-1, i):
+            if Graph.compare_rows(DP, DP, i-1, i):
                 return DP[i]
 
-        if not Graph.__compare_rows(DP, -2, -1):
+        if not Graph.compare_rows(DP, DP, n, n-1):
             assert "There are negative weights in graph"
         return DP[-1]
     
@@ -81,21 +81,16 @@ class Graph(object):
 
 
     @staticmethod
-    def __compare_rows(array, row1, row2):
+    def compare_rows(array1, array2, row1, row2):
         """
             return:
-                true if given rows are identical
+                true if values of row1 in array1 and row2 in array2 are identical
         """
-        for i in range(len(array[0])):
-            if array[row1][i] != array[row2][i]:
+        if row1 >= len(array1) or row2 >= len(array2) or len(array1[0]) != len(array2[0]):
+            return False
+
+        for i in range(len(array1[0])):
+            if array1[row1][i] != array2[row2][i]:
                 return False
         return True
 
-if __name__ == '__main__':
-    """test"""
-    G = Graph([['a','b'],['a','c'],['b','e'],['c','b'], \
-               ['c','d'],['c','f'],['d','b'],['d','e'], \
-               ['d','g'],['e','g'],['f','d'],['f','g']], \
-               [8,5,18,10,3,16,2,12,14,4,30,26])
-    print G.bellman_ford('a')
-    print G.dijkstra('a')
