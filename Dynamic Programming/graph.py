@@ -1,4 +1,4 @@
-import sets
+import heapq
 
 class Graph(object):
     def __init__(self, G, w):
@@ -62,6 +62,24 @@ class Graph(object):
             assert "There are negative weights in graph"
         return DP[-1]
     
+    def dijkstra(self, s):
+        ret = [None]*len(self.labels)
+
+        priorityq = []
+        heapq.heappush(priorityq, [0, self.labels[s]])
+
+        while len(priorityq) > 0:
+            dist, node = heapq.heappop(priorityq)
+            if ret[node] is None:
+                ret[node] = dist
+            if self.weights.get(node) is not None:
+                for adj in self.weights[node]:
+                    new_dist = dist+self.weights[node][adj]
+                    heapq.heappush(priorityq, [new_dist, adj])
+
+        return ret
+
+
     @staticmethod
     def __compare_rows(array, row1, row2):
         """
@@ -75,5 +93,9 @@ class Graph(object):
 
 if __name__ == '__main__':
     """test"""
-    G = Graph([['a','b'],['b','c']],[1,4])
+    G = Graph([['a','b'],['a','c'],['b','e'],['c','b'], \
+               ['c','d'],['c','f'],['d','b'],['d','e'], \
+               ['d','g'],['e','g'],['f','d'],['f','g']], \
+               [8,5,18,10,3,16,2,12,14,4,30,26])
     print G.bellman_ford('a')
+    print G.dijkstra('a')
