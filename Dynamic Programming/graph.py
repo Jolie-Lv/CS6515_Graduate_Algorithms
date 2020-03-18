@@ -7,7 +7,6 @@ class Graph(object):
                 G = directional graph, containing lists of edges
                 w = weight for each edges
         """
-        self.num_edges = len(G)
         self.weights = {} # {start: {dest1: w1, dest2: w2, ...}, ...}
         self.reversed_edges = {} # {dest: [start1, start2, ...], ...}
         self.labels = {}
@@ -16,7 +15,7 @@ class Graph(object):
     def __prepare_graph(self, G, w):
         """
             1.convert node label to number of 0-based: self.labels
-            2.collect edges info: self.num_edges, self.weights, self.reversed_edges
+            2.collect edges info: self.weights, self.reversed_edges
         """
         ni = 0
         for i in range(len(G)):
@@ -46,14 +45,19 @@ class Graph(object):
             return:
                 min distance from s to other nodes
         """
-        DP = [[float('inf') for j in range(len(self.labels))] for i in range(self.num_edges)]
+        n = len(self.labels)
+        DP = [[float('inf') for j in range(n)] for i in range(n)]
         DP[0][self.labels[s]] = 0
 
-        for i in range(1, self.num_edges):
-            for j in range(len(self.labels)):
+        for i in range(1, n):
+            for j in range(n):
                 DP[i][j] = DP[i-1][j]
                 if self.reversed_edges.get(j) is not None:
                     for adj in self.reversed_edges[j]:
                         DP[i][j] = min(DP[i][j], DP[i-1][adj]+self.weights[adj][j])
-
         return DP[-1]
+
+if __name__ == '__main__':
+    """test"""
+    G = Graph([['a','b'],['b','c']],[1,4])
+    print G.bellman_ford('a')
