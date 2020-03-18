@@ -46,16 +46,32 @@ class Graph(object):
                 min distance from s to other nodes
         """
         n = len(self.labels)
-        DP = [[float('inf') for j in range(n)] for i in range(n)]
+        DP = [[float('inf') for j in range(n)] for i in range(n+1)]
         DP[0][self.labels[s]] = 0
 
-        for i in range(1, n):
+        for i in range(1, n+1):
             for j in range(n):
                 DP[i][j] = DP[i-1][j]
                 if self.reversed_edges.get(j) is not None:
                     for adj in self.reversed_edges[j]:
                         DP[i][j] = min(DP[i][j], DP[i-1][adj]+self.weights[adj][j])
+            if Graph.__compare_rows(DP, i-1, i):
+                return DP[i]
+
+        if not Graph.__compare_rows(DP, -2, -1):
+            assert "There are negative weights in graph"
         return DP[-1]
+    
+    @staticmethod
+    def __compare_rows(array, row1, row2):
+        """
+            return:
+                true if given rows are identical
+        """
+        for i in range(len(array[0])):
+            if array[row1][i] != array[row2][i]:
+                return False
+        return True
 
 if __name__ == '__main__':
     """test"""
