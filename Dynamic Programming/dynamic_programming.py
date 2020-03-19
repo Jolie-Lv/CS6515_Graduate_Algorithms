@@ -1,6 +1,6 @@
 def longest_increasing_subsequence(array):
     DP = [1]*len(array)
-    
+
     for i in range(1, len(array)):
         for j in range(i):
             if array[i] > array[j]:
@@ -34,7 +34,7 @@ def longest_common_subsequence(array1, array2):
 def knapsack_no_repeat(items, values, W):
     n = len(items)
     DP = [[0 for j in range(W+1)] for i in range(n)]
-    
+
     for j in range(W+1):
         if items[0] <= j:
             DP[0][j] = values[0]
@@ -61,3 +61,18 @@ def knapsack_repeat(items, values, W):
                 DP[i][j] = DP[i][j-items[i]]+values[i]
 
     return DP[-1][-1]
+
+def chain_matrix_multiply(matrix_dim):
+    n = len(matrix_dim)
+    DP = [[float('inf') for j in range(n)] for i in range(n)]
+
+    for i in range(n):
+        DP[i][i] = 0
+
+    for k in range(1, n):
+        for i in range(n-k):
+            for l in range(i, k+i):
+                DP[i][k+i] = min(DP[i][k+i], DP[i][l]+DP[l+1][k+i]+ \
+                                 matrix_dim[i][0]*matrix_dim[l][1]*matrix_dim[k+i][1])
+
+    return DP[0][-1]
