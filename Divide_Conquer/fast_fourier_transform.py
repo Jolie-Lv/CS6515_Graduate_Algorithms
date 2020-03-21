@@ -30,25 +30,51 @@ import math
 
 class Polynomial(object):
     def __init__(self, coeff):
-        n = len(coeff)
-        p = int(math.log(n,2))
-        if 2**p < n:
-            n = 2**(p+1)
+        self.coeff = coeff
 
-        self.coeff = coeff+[0]*(n-len(coeff))
-        self.w = complex(math.cos(2*math.pi/n),math.sin(2*math.pi/n))
+    def __mul__(self, other):
+        """
+            prepare values for A(x), B(x)
+        """
+        n = Polynomial.__pow_of_2(len(self.coeff)+len(other.coeff))
+        w = complex(math.cos(2*math.pi/n),math.sin(2*math.pi/n))
+        my_values = self.__fft(w, n)
+        other_values = other.__fft(w, n)
+
+        """
+            calculate values for C(x)
+        """
+        c_values = [my_values[i]*other_values[i] for i in range(n)]
+        tmp = Polynomial(c_values)
+
+        """
+            calculate coeff for C(x)
+        """
+        w = w**(n-1)
+        tmp = tmp.__fft(w, n)
+        return Polynomial([(c/n).real for c in tmp])
 
     def fft(self):
-        return self.__fft(self.w,len(self.coeff))
+        n = Polynomial.__pow_of_2(len(self.coeff))
+        w = complex(math.cos(2*math.pi/n),math.sin(2*math.pi/n))
+        return self.__fft(w, n)
+
+    def eval(self, x):
+        ret = 0
+        for i in range(len(self.coeff)):
+            ret += self.coeff[i]*(x**i)
+
+        return ret
 
     def eval_test(self):
         """
             for testing
         """
-        ret = [0]*len(self.coeff)
-        for i in range(len(self.coeff)):
-            for j in range(len(self.coeff)):
-                ret[i] += self.coeff[j]*((self.w**i)**j)
+        n = Polynomial.__pow_of_2(len(self.coeff))
+        w = complex(math.cos(2*math.pi/n),math.sin(2*math.pi/n))
+        ret = [0]*n
+        for i in range(n):
+            ret[i] = self.eval(w**i)
 
         return ret
 
@@ -71,3 +97,10 @@ class Polynomial(object):
         for i in range(start, len(self.coeff), 2):
             ret.append(self.coeff[i])
         return Polynomial(ret)
+
+    @staticmethod
+    def __pow_of_2(n):
+        p = int(math.log(n,2))
+        if 2**p < n:
+            n = 2**(p+1)
+        return n

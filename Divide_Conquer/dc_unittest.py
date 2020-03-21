@@ -22,5 +22,11 @@ class TestDP(unittest.TestCase):
 
         self.assertTrue(ok)
 
+    def test_fft2(self):
+        A = Polynomial([1,2,3,4,5])
+        B = Polynomial([3,4,2,4])
+        C = A*B
+        self.assertTrue(A.eval(7)*B.eval(7) == round(C.eval(7)))
+
 if __name__ == '__main__':
     unittest.main()
