@@ -2,7 +2,7 @@ import unittest
 
 from fast_integer_multiplication import fast_integer_multiplication
 from fast_fourier_transform import Polynomial
-from median import median
+from median import find_element_k
 
 class TestDP(unittest.TestCase):
 
@@ -32,7 +32,8 @@ class TestDP(unittest.TestCase):
     def test_median(self):
         a = [2,3,4,5,1,4,4,1,3,7,6]
         sorted_a = sorted(a)
-        self.assertTrue(median(a, 6) == sorted_a[5])
+        self.assertTrue(find_element_k(a, 6, False) == find_element_k(a, 6, True) \
+                                                    == sorted_a[5])
 
 if __name__ == '__main__':
     unittest.main()
