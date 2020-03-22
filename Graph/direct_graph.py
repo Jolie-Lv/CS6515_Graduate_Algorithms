@@ -1,6 +1,6 @@
 import heapq
 
-class Graph(object):
+class DirectGraph(object):
     def __init__(self, G, w):
         """
             arg:
@@ -38,6 +38,7 @@ class Graph(object):
                 self.reversed_edges[dest] = []
             self.reversed_edges[dest].append(start)
 
+    # Dynamic Programming
     def bellman_ford(self, s):
         """
             arg:
@@ -55,10 +56,10 @@ class Graph(object):
                 if self.reversed_edges.get(j) is not None:
                     for adj in self.reversed_edges[j]:
                         DP[i][j] = min(DP[i][j], DP[i-1][adj]+self.weights[adj][j])
-            if Graph.compare_rows(DP, DP, i-1, i):
+            if DirectGraph.compare_rows(DP, DP, i-1, i):
                 return DP[i]
 
-        if not Graph.compare_rows(DP, DP, n, n-1):
+        if not DirectGraph.compare_rows(DP, DP, n, n-1):
             assert "There are negative weights in graph"
         return DP[-1]
 
@@ -96,6 +97,42 @@ class Graph(object):
                     DP[i][j][k] = min(DP[i-1][j][k], DP[i-1][j][i-1]+DP[i-1][i-1][k])
 
         return DP[-1]
+
+    def topological_sort(self):
+        is_dag, post = self.__is_dag()
+        if is_dag:
+            ret = [-1]*len(self.labels)
+            for node in self.labels:
+                ret[post[self.labels[node]]] = node
+            return ret
+
+        return []
+
+    def __is_dag(self):
+        is_visited = {}
+        count = 0
+        for root in range(len(self.labels)):
+            if is_visited.get(root) is None:
+                stack = [root]
+                while len(stack) > 0:
+                    node = stack[-1]
+                    if is_visited.get(node) is None:
+                        is_visited[node] = -1
+                        if self.weights.get(node) is not None:
+                            for child in self.weights[node]:
+                                if is_visited.get(child) is None:
+                                    stack.append(child)
+                    else:
+                        stack.pop()
+                        is_visited[node] = count
+                        count += 1
+
+        for node in self.weights:
+            for child in self.weights[node]:
+                if is_visited[child] > is_visited[node]:
+                    return False, is_visited
+
+        return True, is_visited
 
     @staticmethod
     def compare_rows(array1, array2, row1, row2):
