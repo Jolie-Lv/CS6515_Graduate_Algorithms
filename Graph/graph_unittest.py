@@ -16,6 +16,12 @@ class TestGraph(unittest.TestCase):
                                ['d','e'],['d','h'],['e','g']], \
                                [8,5,18,10,3,16,2])
 
+        self.G3 = DirectGraph([['a','b'],['b','d'],['b','e'],['e','b'],['b','c'], \
+                               ['c','f'],['e','l'],['f','g'],['g','f'],['g','c'], \
+                               ['l','i'],['k','l'],['f','i'],['h','j'],['j','h'], \
+                               ['h','i'],['j','k'],['i','j']], \
+                               [0]*18)
+
         self.UG = UndirectGraph([['a','b'],['a','c'],['b','c'],['b','d'], \
                                  ['c','e'],['b','e'],['d','e']], \
                                  [1,7,5,4,6,3,2])
@@ -43,11 +49,15 @@ class TestGraph(unittest.TestCase):
         self.assertTrue(check)
 
     def test_topological_sort1(self):
-        self.assertTrue(len(self.G1.topological_sort()) == 0)
+        self.assertFalse(self.G1.topological_sort()[1])
 
     def test_topological_sort2(self):
-        self.assertTrue(self.G2.topological_sort() == ['f', 'c', 'h', 'g', 'e', \
-                                                       'd', 'a', 'b'])
+        self.assertTrue(self.G2.topological_sort()[0] == ['f', 'c', 'h', 'g', \
+                                                          'e', 'd', 'a', 'b'])
+
+    def test_scc(self):
+        self.assertTrue(self.G3.strongly_connected_components() == \
+            [['l', 'i', 'j', 'h', 'k'], ['c', 'f', 'g'], ['d'], ['b', 'e'], ['a']])
 
     def test_mst(self):
         self.assertTrue(self.UG.prim()[1] == self.UG.kruskal()[1] == 11)

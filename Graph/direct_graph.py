@@ -1,4 +1,6 @@
 import heapq
+import copy
+import sets
 
 class DirectGraph(object):
     def __init__(self, G, w):
@@ -10,6 +12,7 @@ class DirectGraph(object):
         self.weights = {} # {start: {dest1: w1, dest2: w2, ...}, ...}
         self.reversed_edges = {} # {dest: [start1, start2, ...], ...}
         self.labels = {}
+        self.labels_num = []
         self.__prepare_graph(G, w)
 
     def __prepare_graph(self, G, w):
@@ -17,13 +20,12 @@ class DirectGraph(object):
             1.convert node label to number of 0-based: self.labels
             2.collect edges info: self.weights, self.reversed_edges
         """
-        ni = 0
         for i in range(len(G)):
             # keep map from actual node to 0-based num node
             for node in G[i]:
                 if self.labels.get(node) is None:
-                    self.labels[node] = ni
-                    ni += 1
+                    self.labels[node] = len(self.labels_num)
+                    self.labels_num.append(node)
 
             start = self.labels[G[i][0]]
             dest = self.labels[G[i][1]]
@@ -100,13 +102,36 @@ class DirectGraph(object):
 
     def topological_sort(self):
         is_dag, post = self.__is_dag()
-        if is_dag:
-            ret = [-1]*len(self.labels)
-            for node in self.labels:
-                ret[post[self.labels[node]]] = node
-            return ret
+        ret = [-1]*len(self.labels)
+        for node in self.labels:
+            ret[post[self.labels[node]]] = node
+        return ret, is_dag
 
-        return []
+    def strongly_connected_components(self):
+        reversed_graph = copy.deepcopy(self)
+        reversed_graph.__reversed_graph()
+        sort_r, _ = reversed_graph.topological_sort()
+
+        ret = []
+        is_visited = sets.Set()
+        stack = []
+
+        for i in range(1,len(sort_r)+1):
+            sink = sort_r[-i]
+            if sink not in is_visited:
+                ret.append([])
+                stack.append(sink)
+                while len(stack) > 0:
+                    node = stack.pop()
+                    if node not in is_visited:
+                        ret[-1].append(node)
+                        is_visited.add(node)
+                        if self.weights.get(self.labels[node]) is not None:
+                            for dest in self.weights[self.labels[node]]:
+                                if self.labels_num[dest] not in is_visited:
+                                    stack.append(self.labels_num[dest])
+
+        return ret
 
     def __is_dag(self):
         is_visited = {}
@@ -114,15 +139,17 @@ class DirectGraph(object):
         for root in range(len(self.labels)):
             if is_visited.get(root) is None:
                 stack = [root]
+                is_visited[root] = -2
                 while len(stack) > 0:
                     node = stack[-1]
-                    if is_visited.get(node) is None:
+                    if is_visited[node] == -2:
                         is_visited[node] = -1
                         if self.weights.get(node) is not None:
                             for child in self.weights[node]:
                                 if is_visited.get(child) is None:
                                     stack.append(child)
-                    else:
+                                    is_visited[child] = -2
+                    elif is_visited[node] == -1:
                         stack.pop()
                         is_visited[node] = count
                         count += 1
@@ -133,6 +160,20 @@ class DirectGraph(object):
                     return False, is_visited
 
         return True, is_visited
+
+    def __reversed_graph(self):
+        new_weights = {}
+        self.reversed_edges = {}
+
+        for start in self.weights:
+            self.reversed_edges[start] = []
+            for dest in self.weights[start]:
+                self.reversed_edges[start].append(dest)
+                if new_weights.get(dest) is None:
+                    new_weights[dest] = {}
+                new_weights[dest][start] = self.weights[start][dest]
+
+        self.weights = new_weights
 
     @staticmethod
     def compare_rows(array1, array2, row1, row2):
