@@ -2,6 +2,7 @@ import unittest
 
 from direct_graph import DirectGraph
 from undirect_graph import UndirectGraph
+from sat import CNF
 
 class TestGraph(unittest.TestCase):
 
@@ -61,6 +62,24 @@ class TestGraph(unittest.TestCase):
 
     def test_mst(self):
         self.assertTrue(self.UG.prim()[1] == self.UG.kruskal()[1] == 11)
+
+    def test_sat_satisfiable1(self):
+        cnf1 = [['-x1','-x2'],['x2','x3'],['-x3','-x1']]
+        cnf1 = CNF(cnf1)
+        boolean = cnf1.sat2()
+        self.assertTrue(cnf1.value(boolean))
+
+    def test_sat_satisfiable2(self):
+        cnf2 = [['x1','x2'],['x2','-x1'],['-x1','-x2']]
+        cnf2 = CNF(cnf2)
+        boolean = cnf2.sat2()
+        self.assertTrue(cnf2.value(boolean))
+
+    def test_sat_unsatisfiable(self):
+        cnf3 = [['x1','x2'],['x2','-x1'],['x1','-x2'],['-x1','-x2']]
+        cnf3 = CNF(cnf3)
+        boolean = cnf3.sat2()
+        self.assertTrue(boolean == 'provided cnf is not satisfiable')
 
 if __name__ == '__main__':
     unittest.main()
