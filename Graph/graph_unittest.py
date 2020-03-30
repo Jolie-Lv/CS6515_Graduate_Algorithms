@@ -23,6 +23,10 @@ class TestGraph(unittest.TestCase):
                                ['h','i'],['j','k'],['i','j']], \
                                [0]*18)
 
+        self.G4 = DirectGraph([['s','a'],['s','c'],['a','c'],['c','d'],['a','d'], \
+                               ['a','b'],['d','b'],['b','t'],['d','t']], \
+                               [10,10,2,9,8,4,6,10,10])
+
         self.UG = UndirectGraph([['a','b'],['a','c'],['b','c'],['b','d'], \
                                  ['c','e'],['b','e'],['d','e']], \
                                  [1,7,5,4,6,3,2])
@@ -80,6 +84,9 @@ class TestGraph(unittest.TestCase):
         cnf3 = CNF(cnf3)
         boolean = cnf3.sat2()
         self.assertTrue(boolean == 'provided cnf is not satisfiable')
+
+    def test_ford_fulkerson(self):
+        self.assertTrue(self.G4.ford_fulkerson('s','t') == 19)
 
 if __name__ == '__main__':
     unittest.main()

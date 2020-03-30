@@ -100,6 +100,78 @@ class DirectGraph(object):
 
         return DP[-1]
 
+    # max flow
+    def ford_fulkerson(self, s, t):
+        s = self.labels[s]
+        t = self.labels[t]
+        residual = {}
+        for node in self.weights:
+            residual[node] = {}
+            for dest in self.weights[node]:
+                residual[node][dest] = 0
+
+        return self.__ford_fulkerson_impl(s, t, residual)
+
+    def __ford_fulkerson_impl(self, s, t, residual):
+        is_visited = [False]*len(self.labels)
+        stack = [s]
+        while len(stack) > 0:
+            node = stack[-1]
+            if node == t:
+                path = [node]
+                while len(stack) > 0:
+                    n = stack.pop()
+                    if is_visited[n]:
+                        path.append(n)
+
+                """
+                    find minimum flow
+                """
+                flow = float('inf')
+                for i in range(1,len(path)):
+                    start = path[i]
+                    dest = path[i-1]
+                    if self.weights.get(start) is not None and \
+                       self.weights[start].get(dest) is not None:
+                       flow = min(flow, self.weights[start][dest] - \
+                                        residual[start][dest])
+                    else:
+                        flow = min(flow, residual[dest][start])
+
+                """
+                    update residual graph
+                """
+                for i in range(1,len(path)):
+                    start = path[i]
+                    dest = path[i-1]
+                    if self.weights.get(start) is not None and \
+                       self.weights[start].get(dest) is not None:
+                       residual[start][dest] += flow
+                    else:
+                        residual[dest][start] -= flow
+
+                return flow + self.__ford_fulkerson_impl(s, t, residual)
+
+            elif is_visited[node]:
+                is_visited[node] = False
+                stack.pop()
+                continue
+
+            else:
+                is_visited[node] = True
+                if self.weights.get(node) is not None:
+                    for dest in self.weights[node]:
+                        if not is_visited[dest] and \
+                           residual[node][dest] < self.weights[node][dest]:
+                           stack.append(dest)
+                if node != s and len(self.reversed_edges[node]) > 0:
+                    for dest in self.reversed_edges[node]:
+                        if not is_visited[dest] and \
+                           residual[dest][node] > 0:
+                           stack.append(dest)
+
+        return 0
+
     def topological_sort(self):
         is_dag, post = self.__is_dag()
         ret = [-1]*len(self.labels)
